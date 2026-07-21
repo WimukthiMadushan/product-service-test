@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/WimukthiMadushan/product-service-test.git'
+                    url: 'https://github.com/WimukthiMadushan/product-service-test.git'
             }
         }
 
@@ -22,27 +22,16 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t wimukthibandara/product-service:${BUILD_NUMBER} .'
+                sh 'docker build -t wimukthibandara/product-service:latest .'
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([
-                        usernamePassword(
-                            credentialsId: 'dockerhub',
-                            usernameVariable: 'DOCKER_USER',
-                            passwordVariable: 'DOCKER_PASS'
-                        )
-                    ]) {
-                    sh '''
-                    echo $DOCKER_PASS | docker login \
-                        -u $DOCKER_USER \
-                        --password-stdin
-
-                    docker push wimukthibandara/product-service:${BUILD_NUMBER}
-                    '''
-                }
+                sh '''update
+                docker login -u wimukthibandara -p #WM@b2000#
+                docker push wimukthibandara/product-service:latest
+                '''
             }
         }
     }
