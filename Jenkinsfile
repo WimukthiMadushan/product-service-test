@@ -1,8 +1,8 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven3'
+    tools{
+        maven 'maven_3_5_0'
     }
 
     stages {
