@@ -1,30 +1,47 @@
 pipeline {
     agent any
-    tools{
-        maven 'maven_3_5_0'
-    }
-    stages{
-        stage('Build Maven'){
-            steps{
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/WimukthiMadushan/product-service-test.git']]])
-                sh 'mvn clean install'
-            }
-        }
-        stage('Build docker image'){
-            steps{
-                script{
-                    sh 'docker build -t wimukthibandara/product-service .'
-                }
-            }
-        }
-        stage('Push image to Hub'){
-            steps{
-                script{
-                   withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
-                   sh 'docker login -u javatechie -p ${dockerhubpwd}'
 
-}
-                   sh 'docker push wimukthibandara/product-service'
+    tools {
+        maven 'Maven3'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/WimukthiMadushan/product-service-test.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t wimukthibandara/product-service:${BUILD_NUMBER} .'
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([
+                        usernamePassword(
+                            credentialsId: 'dockerhub',
+                            usernameVariable: 'DOCKER_USER',
+                            passwordVariable: 'DOCKER_PASS'
+                        )
+                    ]) {
+                    sh '''
+                    echo $DOCKER_PASS | docker login \
+                        -u $DOCKER_USER \
+                        --password-stdin
+
+                    docker push wimukthibandara/product-service:${BUILD_NUMBER}
+                    '''
                 }
             }
         }
